@@ -17,17 +17,15 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.Arrays;
 import java.util.List;
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity
 public class SecurityConfig {
 
-    // Inject ApplicationContext to get beans directly when needed
     private final ApplicationContext applicationContext;
 
-    // Use constructor injection for ApplicationContext
     public SecurityConfig(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
     }
@@ -39,14 +37,13 @@ public class SecurityConfig {
         httpSecurity.sessionManagement(http -> http.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         httpSecurity.cors(Customizer.withDefaults());
 
-        // Get JwtFilter bean directly from ApplicationContext
         JwtFilter jwtFilter = applicationContext.getBean(JwtFilter.class);
         httpSecurity.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         httpSecurity.authorizeHttpRequests(authorize -> authorize
                 .requestMatchers("/auth/**").permitAll()
-                .requestMatchers(HttpMethod.POST, "/users").permitAll() // Example: if you have a user creation endpoint
-                .requestMatchers("/your_public_endpoint/**").permitAll() // Placeholder for other public endpoints
+                .requestMatchers(HttpMethod.POST, "/users").permitAll()
+                .requestMatchers("/your_public_endpoint/**").permitAll()
                 .anyRequest().authenticated()
         );
 
@@ -61,10 +58,12 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration corsConfiguration = new CorsConfiguration();
-        corsConfiguration.setAllowedOrigins(List.of("*"));
-        corsConfiguration.setAllowedMethods(List.of("*"));
-        corsConfiguration.setAllowedHeaders(List.of("*"));
+        corsConfiguration.setAllowedOrigins(Arrays.asList("https://front-project-personal-trainer.vercel.app"));
+        corsConfiguration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        corsConfiguration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Auth-Token"));
+        corsConfiguration.setExposedHeaders(Arrays.asList("Authorization", "X-Auth-Token"));
         corsConfiguration.setAllowCredentials(true);
+        corsConfiguration.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", corsConfiguration);
