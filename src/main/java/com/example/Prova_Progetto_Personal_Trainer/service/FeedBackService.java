@@ -11,6 +11,8 @@ import com.example.Prova_Progetto_Personal_Trainer.repository.SchedaAllenamentoS
 import com.example.Prova_Progetto_Personal_Trainer.repository.UserRepository;
 import com.example.Prova_Progetto_Personal_Trainer.security.JwtTool;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -31,23 +33,24 @@ public class FeedBackService {
     @Autowired
     private JwtTool jwtTool;
 
-    public FeedBackResponseDto saveFeedback(FeedBackRequestDto dto, String token) throws NotFoundException {
-        User utente = jwtTool.getUserFromToken(token.substring(7));
+    public void saveFeedback(String feedbackText) { // Adatta i parametri
+        // String token = ... // Se estraevi il token qui, non serve più
+        // User user = jwtTool.getUserFromToken(token); // Questa riga causava l'errore
 
-        SchedaAllenamentoSave scheda = schedaAllenamentoSaveRepository.findById(dto.getSchedaId())
-                .orElseThrow(() -> new NotFoundException("Scheda con id " + dto.getSchedaId() + " non trovata"));
+        // Ottieni l'oggetto Authentication dal SecurityContextHolder
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        FeedBack feedBack = new FeedBack();
-        feedBack.setCommento(dto.getCommento());
-        feedBack.setVoto(dto.getVoto());
-        feedBack.setUtente(utente);
-        feedBack.setScheda(scheda);
-        feedBack.setDataInserimento(LocalDateTime.now());
-
-        FeedBack saved = feedBackRepository.save(feedBack);
-        return toResponseDto(saved);
-
+        if (authentication != null && authentication.getPrincipal() instanceof User) {
+            User currentUser = (User) authentication.getPrincipal();
+            System.out.println("DEBUG_FEEDBACK: Utente autenticato: " + currentUser.getUsername());
+            // Ora puoi usare currentUser.getId(), currentUser.getUsername(), ecc.
+            // Esempio: feedBackRepository.save(new Feedback(feedbackText, currentUser.getId()));
+        } else {
+            System.out.println("DEBUG_FEEDBACK: Utente non autenticato o tipo errato.");
+            // Gestisci il caso in cui l'utente non è autenticato o l'oggetto principal non è un User
+        }
     }
+
 
     public List<FeedBackResponseDto> getFeedbackBySchedaId(int schedaId) {
         List<FeedBack> feedbacks = feedBackRepository.findBySchedaId(schedaId);
