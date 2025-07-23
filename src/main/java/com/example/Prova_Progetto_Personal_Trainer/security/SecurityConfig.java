@@ -22,6 +22,7 @@ import java.util.List;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 public class SecurityConfig {
 
     private final ApplicationContext applicationContext;
@@ -43,8 +44,12 @@ public class SecurityConfig {
         httpSecurity.authorizeHttpRequests(authorize -> authorize
                 .requestMatchers("/auth/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/users").permitAll()
-                .requestMatchers("/your_public_endpoint/**").permitAll()
-                .anyRequest().authenticated()
+                // Aggiungi qui le regole specifiche per gli endpoint protetti con hasAuthority
+                // Assicurati che l'utente abbia l'autorità 'USER' (come nel tuo DB)
+                .requestMatchers(HttpMethod.POST, "/save").hasAuthority("USER") // Per salvare schede
+                .requestMatchers(HttpMethod.GET, "/save/schede").hasAuthority("USER") // Per visualizzare le schede salvate
+                .requestMatchers(HttpMethod.GET, "/prodotti").hasAuthority("USER") // Se anche /prodotti richiede autenticazione
+                .anyRequest().authenticated() // Tutte le altre richieste non specificate sopra richiedono solo autenticazione
         );
 
         return httpSecurity.build();
@@ -58,6 +63,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration corsConfiguration = new CorsConfiguration();
+        // Ho ripristinato Arrays.asList per coerenza con le best practice
         corsConfiguration.setAllowedOrigins(Arrays.asList("https://front-project-personal-trainer.vercel.app"));
         corsConfiguration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         corsConfiguration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Auth-Token"));
