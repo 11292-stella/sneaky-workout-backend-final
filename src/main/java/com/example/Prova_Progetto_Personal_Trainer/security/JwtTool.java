@@ -12,6 +12,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 
 @Component
@@ -26,10 +29,16 @@ public class JwtTool {
     private UserService userService;
 
     public String createToken(User user) {
+        Map<String, Object> claims = new HashMap<>();
+
+        claims.put("roles", List.of(user.getRole().name()));
+
+
         return Jwts.builder()
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + durata))
                 .subject(String.valueOf(user.getId()))
+                .claims(claims) // <-- Aggiungi i claims qui!
                 .signWith(Keys.hmacShaKeyFor(chiaveSegreta.getBytes()))
                 .compact();
     }
@@ -42,20 +51,23 @@ public class JwtTool {
     }
 
     public User getUserFromToken(String token) throws NotFoundException {
-
-        String subject = Jwts.parser()
+        // Estrai i claims dal token
+        io.jsonwebtoken.Claims claims = Jwts.parser()
                 .verifyWith(Keys.hmacShaKeyFor(chiaveSegreta.getBytes()))
                 .build()
                 .parseSignedClaims(token)
-                .getPayload()
-                .getSubject();
+                .getPayload();
 
+        String subject = claims.getSubject();
 
         if (subject == null || !subject.matches("\\d+")) {
             throw new NotFoundException("Invalid user ID in token.");
         }
 
         int id = Integer.parseInt(subject);
+
+
+
         return userService.getUser(id);
     }
 }
