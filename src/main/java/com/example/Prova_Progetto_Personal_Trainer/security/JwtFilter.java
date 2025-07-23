@@ -38,8 +38,10 @@ public class JwtFilter extends OncePerRequestFilter {
         String token = authorization.substring(7);
 
         try {
-            // Usa il nuovo metodo getAuthentication che estrae anche i ruoli
-            Authentication authentication = jwtTool.getAuthentication(token);
+            jwtTool.validateToken(token);
+            User user = jwtTool.getUserFromToken(token);
+
+            Authentication authentication = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
         } catch (NotFoundException | UnAuthorizedException e) {
@@ -50,11 +52,15 @@ public class JwtFilter extends OncePerRequestFilter {
             return;
         }
 
+
         filterChain.doFilter(request, response);
     }
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        return new AntPathMatcher().match("/auth/**", request.getServletPath());
+        String path = request.getServletPath();
+        String method = request.getMethod();
+
+        return new AntPathMatcher().match("/auth/**", path) || "OPTIONS".equalsIgnoreCase(method);
     }
 }

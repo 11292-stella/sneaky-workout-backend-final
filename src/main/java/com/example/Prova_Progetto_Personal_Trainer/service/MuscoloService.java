@@ -3,7 +3,6 @@ package com.example.Prova_Progetto_Personal_Trainer.service;
 import com.example.Prova_Progetto_Personal_Trainer.dto.MuscoloDto;
 import com.example.Prova_Progetto_Personal_Trainer.exception.NotFoundException;
 import com.example.Prova_Progetto_Personal_Trainer.model.Muscolo;
-import com.example.Prova_Progetto_Personal_Trainer.model.User;
 import com.example.Prova_Progetto_Personal_Trainer.repository.MuscoloRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;

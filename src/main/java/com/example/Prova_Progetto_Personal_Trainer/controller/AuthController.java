@@ -12,12 +12,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
+@RequestMapping("/auth")
 public class AuthController {
 
     @Autowired
@@ -26,24 +24,24 @@ public class AuthController {
     @Autowired
     private AuthService authService;
 
-    @PostMapping("/auth/register")
+    @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
     public User register(@RequestBody @Validated UserDto userDto, BindingResult bindingResult) throws ValidationException {
         if (bindingResult.hasErrors()) {
             String errorMessage = bindingResult.getAllErrors().stream()
                     .map(objectError -> objectError.getDefaultMessage())
-                    .reduce("", (s, e) -> s + e + " "); // Added space for readability
+                    .reduce("", (s, e) -> s + e + " ");
             throw new ValidationException(errorMessage.trim());
         }
         return userService.saveUser(userDto);
     }
 
-    @PostMapping("/auth/login")
+    @PostMapping("/login")
     public String login(@RequestBody @Validated LoginDto loginDto, BindingResult bindingResult) throws ValidationException, NotFoundException {
         if (bindingResult.hasErrors()) {
             String errorMessage = bindingResult.getAllErrors().stream()
                     .map(objectError -> objectError.getDefaultMessage())
-                    .reduce("", (s, e) -> s + e + " "); // Added space for readability
+                    .reduce("", (s, e) -> s + e + " ");
             throw new ValidationException(errorMessage.trim());
         }
         return authService.login(loginDto);

@@ -4,7 +4,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -17,7 +16,6 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.util.Arrays;
 import java.util.List;
 
 @Configuration
@@ -25,7 +23,9 @@ import java.util.List;
 @EnableMethodSecurity
 public class SecurityConfig {
 
+
     private final ApplicationContext applicationContext;
+
 
     public SecurityConfig(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
@@ -36,7 +36,9 @@ public class SecurityConfig {
         httpSecurity.formLogin(http -> http.disable());
         httpSecurity.csrf(http -> http.disable());
         httpSecurity.sessionManagement(http -> http.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
-        httpSecurity.cors(Customizer.withDefaults());
+        httpSecurity.cors(cors -> cors.configurationSource(corsConfigurationSource()));
+
+
 
         JwtFilter jwtFilter = applicationContext.getBean(JwtFilter.class);
         httpSecurity.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
@@ -44,12 +46,8 @@ public class SecurityConfig {
         httpSecurity.authorizeHttpRequests(authorize -> authorize
                 .requestMatchers("/auth/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/users").permitAll()
-                // Aggiungi qui le regole specifiche per gli endpoint protetti con hasAuthority
-                // Assicurati che l'utente abbia l'autorità 'USER' (come nel tuo DB)
-                .requestMatchers(HttpMethod.POST, "/save").hasAuthority("USER") // Per salvare schede
-                .requestMatchers(HttpMethod.GET, "/save/schede").hasAuthority("USER") // Per visualizzare le schede salvate
-                .requestMatchers(HttpMethod.GET, "/prodotti").hasAuthority("USER") // Se anche /prodotti richiede autenticazione
-                .anyRequest().authenticated() // Tutte le altre richieste non specificate sopra richiedono solo autenticazione
+                .requestMatchers("/muscoli").permitAll()
+                .anyRequest().authenticated()
         );
 
         return httpSecurity.build();
@@ -63,13 +61,10 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration corsConfiguration = new CorsConfiguration();
-        // Ho ripristinato Arrays.asList per coerenza con le best practice
-        corsConfiguration.setAllowedOrigins(Arrays.asList("https://front-project-personal-trainer.vercel.app"));
-        corsConfiguration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        corsConfiguration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Auth-Token"));
-        corsConfiguration.setExposedHeaders(Arrays.asList("Authorization", "X-Auth-Token"));
+        corsConfiguration.setAllowedOrigins(List.of("http://localhost:5173"));
+        corsConfiguration.setAllowedMethods(List.of("*"));
+        corsConfiguration.setAllowedHeaders(List.of("*"));
         corsConfiguration.setAllowCredentials(true);
-        corsConfiguration.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", corsConfiguration);

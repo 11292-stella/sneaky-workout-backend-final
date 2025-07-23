@@ -30,9 +30,6 @@ public class VoceCarrelloService {
     private UserService userService;
 
     public VoceCarrello saveVoceCarrello(VoceCarrelloDto voceCarrelloDto, User authenticatedUser) throws NotFoundException {
-
-
-
         Prodotto prodotto = prodottoRepository.findById(voceCarrelloDto.getProdottoId())
                 .orElseThrow(() -> new NotFoundException("Prodotto non trovato"));
 
@@ -41,12 +38,13 @@ public class VoceCarrelloService {
         voceCarrello.setProdotto(prodotto);
         voceCarrello.setQuantita(voceCarrelloDto.getQuantita());
 
-        return voceCarrelloRepository.save(voceCarrello);
-
+        VoceCarrello savedVoceCarrello = voceCarrelloRepository.save(voceCarrello);
+        System.out.println("DEBUG - VoceCarrello salvata con ID: " + savedVoceCarrello.getId());
+        return savedVoceCarrello;
     }
 
     public VoceCarrello getVoceCarrello(int id) throws NotFoundException {
-        return voceCarrelloRepository.findById(id).orElseThrow(() -> new NotFoundException("Voce carrelo con id " +id+ " non trovato"));
+        return voceCarrelloRepository.findById(id).orElseThrow(() -> new NotFoundException("Voce carrello con id " +id+ " non trovato"));
     }
 
     public Page<VoceCarrello> getAllVoceCarrello(int page, int size, String sortBy){
@@ -54,10 +52,12 @@ public class VoceCarrelloService {
         return voceCarrelloRepository.findAll(pageable);
     }
 
+    public VoceCarrello getVoceCarrelloPerUtente(int id, User utente) throws NotFoundException {
+        return voceCarrelloRepository.findByIdAndUtente(id, utente)
+                .orElseThrow(() -> new NotFoundException("Voce carrello con id " + id + " non trovato per questo utente"));
+    }
+
     public VoceCarrello updateVoceCarrello(VoceCarrelloDto voceCarrelloDto, int id , User authenticatedUser) throws NotFoundException {
-
-
-
         Prodotto prodotto = prodottoRepository.findById(voceCarrelloDto.getProdottoId())
                 .orElseThrow(() -> new NotFoundException("Prodotto non trovato"));
 
@@ -66,33 +66,36 @@ public class VoceCarrelloService {
         voceCarrelloDaAggiornare.setProdotto(prodotto);
         voceCarrelloDaAggiornare.setQuantita(voceCarrelloDto.getQuantita());
         return voceCarrelloRepository.save(voceCarrelloDaAggiornare);
-
-
     }
 
-    public void deleteVoceCarrello(int id) throws NotFoundException {
-        VoceCarrello voceCarrelloDaCancellare = getVoceCarrello(id);
+    public void deleteVoceCarrello(int id, User authenticatedUser) throws NotFoundException {
+        VoceCarrello voceCarrelloDaCancellare = getVoceCarrelloPerUtente(id, authenticatedUser);
         voceCarrelloRepository.delete(voceCarrelloDaCancellare);
     }
-
 
     public List<VoceCarrelloResponseDto> getCarrelloPerUtente(User utente) {
         List<VoceCarrello> voci = voceCarrelloRepository.findByUtente(utente);
 
         return voci.stream().map(voce -> {
             Prodotto prodotto = voce.getProdotto();
+            System.out.println("➡️ Creo DTO per voce carrello con ID: " + voce.getId() +
+                    ", prodotto ID: " + prodotto.getId() +
+                    ", quantità: " + voce.getQuantita());
             return new VoceCarrelloResponseDto(
+                    voce.getId(),
                     prodotto.getNome(),
                     prodotto.getDescrizione(),
                     prodotto.getPrezzo(),
                     voce.getQuantita(),
-                    prodotto.getPrezzo() * voce.getQuantita()
+                    prodotto.getPrezzo() * voce.getQuantita(),
+                    prodotto.getId()
             );
         }).collect(Collectors.toList());
     }
-
-
-
-
-
 }
+
+
+
+
+
+

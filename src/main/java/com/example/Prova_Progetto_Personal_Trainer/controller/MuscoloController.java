@@ -4,12 +4,10 @@ import com.example.Prova_Progetto_Personal_Trainer.dto.MuscoloDto;
 import com.example.Prova_Progetto_Personal_Trainer.exception.NotFoundException;
 import com.example.Prova_Progetto_Personal_Trainer.exception.ValidationException;
 import com.example.Prova_Progetto_Personal_Trainer.model.Muscolo;
-import com.example.Prova_Progetto_Personal_Trainer.model.User;
 import com.example.Prova_Progetto_Personal_Trainer.service.MuscoloService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -44,7 +42,7 @@ public class MuscoloController {
     @GetMapping("")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USER') ")
     public Page<Muscolo> getAllMuscolo(@RequestParam(defaultValue = "0") int page,
-                                       @RequestParam(defaultValue = "10") int size,
+                                       @RequestParam(defaultValue = "28") int size,
                                        @RequestParam(defaultValue = "id") String sortBy){
         return  muscoloService.getAllMuscolo(page,size,sortBy);
     }

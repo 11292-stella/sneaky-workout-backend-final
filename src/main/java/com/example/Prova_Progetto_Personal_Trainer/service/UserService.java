@@ -49,7 +49,7 @@ public class UserService {
                 orElseThrow(() -> new NotFoundException("User con id " + id + " non trovato"));
     }
 
-    public User getUserByUsername(String username) throws NotFoundException { // Add this method
+    public User getUserByUsername(String username) throws NotFoundException {
         return userRepository.findByUsername(username)
                 .orElseThrow(() -> new NotFoundException("User con username " + username + " non trovato"));
     }
@@ -74,7 +74,7 @@ public class UserService {
 
     private void sendRegistrationEmail(String recipientEmail) {
         SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(recipientEmail); // recipientEmail ORA CONTERRÀ L'EMAIL VERA
+        message.setTo(recipientEmail);
         message.setSubject("Benvenuto!");
         message.setText("Congratulazioni! La tua registrazione al servizio è avvenuta con successo.\n" +
                 "Ora puoi accedere e utilizzare tutte le nostre funzionalità.\n\n" +
@@ -85,7 +85,7 @@ public class UserService {
             System.out.println("Email di registrazione inviata a: " + recipientEmail);
         } catch (Exception e) {
             System.err.println("Errore durante l'invio dell'email di registrazione a " + recipientEmail + ": " + e.getMessage());
-            // Qui potresti loggare l'errore o gestire la notifica in altro modo
+
         }
     }
     }

@@ -8,9 +8,13 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class VoceCarrelloResponseDto {
+
+    private int id;
     private String nomeProdotto;
     private String descrizioneProdotto;
     private int prezzoUnitario;
     private int quantita;
     private int totale;
+    private int prodottoId;
+
 }

@@ -11,6 +11,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class ProdottoService {
 
@@ -51,4 +53,7 @@ public class ProdottoService {
         prodottoRepository.delete(prodottoDaCancellare);
 
 }
+    public List<Prodotto> cercaPerNome(String nome) {
+        return prodottoRepository.findByNomeContainingIgnoreCase(nome);
+    }
 }
