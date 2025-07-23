@@ -17,12 +17,11 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.util.Arrays;
 import java.util.List;
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity // Mantieni questa annotazione se usi @PreAuthorize sui metodi
+@EnableMethodSecurity // Manteniamo questa annotazione se usi @PreAuthorize sui metodi
 public class SecurityConfig {
 
     private final ApplicationContext applicationContext;
@@ -33,50 +32,49 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
-        httpSecurity.formLogin(http -> http.disable());
-        httpSecurity.csrf(http -> http.disable());
-        httpSecurity.sessionManagement(http -> http.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+        httpSecurity.formLogin(http -> http.disable()); // Disabilita il form login predefinito
+        httpSecurity.csrf(http -> http.disable()); // Disabilita la protezione CSRF (necessario per API stateless)
+        httpSecurity.sessionManagement(http -> http.sessionCreationPolicy(SessionCreationPolicy.STATELESS)); // Sessioni stateless
 
         // Applica la configurazione CORS definita nel bean corsConfigurationSource()
-        // Questo dovrebbe essere sufficiente, ma se non funziona, potremmo dover aggiungere CorsFilter esplicitamente.
         httpSecurity.cors(Customizer.withDefaults());
 
+        // Inietta il JwtFilter prima del filtro di autenticazione username/password
         JwtFilter jwtFilter = applicationContext.getBean(JwtFilter.class);
         httpSecurity.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
+        // Configura le regole di autorizzazione per le richieste HTTP
         httpSecurity.authorizeHttpRequests(authorize -> authorize
-                .requestMatchers("/auth/**").permitAll()
-                .requestMatchers(HttpMethod.POST, "/users").permitAll()
-                // Aggiungi qui le regole specifiche per gli endpoint protetti con hasAuthority
-                // Assicurati che l'utente abbia l'autorità 'USER' (come nel tuo DB)
-                .requestMatchers(HttpMethod.POST, "/save").hasAuthority("USER") // Per salvare schede
-                .requestMatchers(HttpMethod.GET, "/save/schede").hasAuthority("USER") // Per visualizzare le schede salvate
-                .requestMatchers(HttpMethod.GET, "/prodotti").hasAuthority("USER") // Se anche /prodotti richiede autenticazione
-                .anyRequest().authenticated() // Tutte le altre richieste non specificate sopra richiedono solo autenticazione
+                .requestMatchers("/auth/**").permitAll() // Permette l'accesso a tutti gli endpoint di autenticazione
+                .requestMatchers(HttpMethod.POST, "/users").permitAll() // Permette la creazione di nuovi utenti
+                // Tutte le altre richieste richiedono che l'utente sia autenticato (abbia un token valido)
+                // Non vengono richiesti ruoli specifici qui, solo l'autenticazione
+                .anyRequest().authenticated()
         );
 
-        return httpSecurity.build();
+        return httpSecurity.build(); // Costruisce e restituisce la catena di filtri di sicurezza
     }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
+        // Bean per la codifica delle password (BCrypt)
         return new BCryptPasswordEncoder(10);
     }
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration corsConfiguration = new CorsConfiguration();
-        // *** MODIFICA QUI PER CONSENTIRE TUTTO (SOLO PER DEBUG) ***
-        corsConfiguration.setAllowedOrigins(List.of("*")); // Consentire tutte le origini
-        corsConfiguration.setAllowedMethods(List.of("*")); // Consentire tutti i metodi (GET, POST, PUT, DELETE, OPTIONS)
-        corsConfiguration.setAllowedHeaders(List.of("*")); // Consentire tutti gli header
-        corsConfiguration.setExposedHeaders(List.of("Authorization", "X-Auth-Token")); // Mantenere questi per il frontend
-        corsConfiguration.setAllowCredentials(true);
-        corsConfiguration.setMaxAge(3600L); // Cache per 1 ora
+        // *** Configurazione CORS molto ampia per debug ***
+        corsConfiguration.setAllowedOrigins(List.of("*")); // Consente tutte le origini
+        corsConfiguration.setAllowedMethods(List.of("*")); // Consente tutti i metodi HTTP (GET, POST, PUT, DELETE, OPTIONS)
+        corsConfiguration.setAllowedHeaders(List.of("*")); // Consente tutti gli header nelle richieste
+        corsConfiguration.setExposedHeaders(List.of("Authorization", "X-Auth-Token")); // Espone questi header al frontend
+        corsConfiguration.setAllowCredentials(true); // Consente l'invio di credenziali (es. cookie, header Authorization)
+        corsConfiguration.setMaxAge(3600L); // Cache per 1 ora per le risposte preflight
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", corsConfiguration);
+        source.registerCorsConfiguration("/**", corsConfiguration); // Applica questa configurazione a tutti i percorsi
 
-        return source;
+        return source; // Restituisce la sorgente di configurazione CORS
     }
 }

@@ -9,7 +9,6 @@ import com.example.Prova_Progetto_Personal_Trainer.model.User;
 import com.example.Prova_Progetto_Personal_Trainer.repository.MuscoloRepository;
 import com.example.Prova_Progetto_Personal_Trainer.repository.SchedaAllenamentoSaveRepository;
 import com.example.Prova_Progetto_Personal_Trainer.repository.UserRepository;
-import com.example.Prova_Progetto_Personal_Trainer.security.JwtTool;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;

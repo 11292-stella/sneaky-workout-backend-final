@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/esercizi")
+@CrossOrigin(origins = "*")
 public class EsercizioController {
     @Autowired
     private EserciziService eserciziService;

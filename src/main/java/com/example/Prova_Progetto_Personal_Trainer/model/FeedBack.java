@@ -14,6 +14,7 @@ public class FeedBack {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
+
     private String commento;
 
     private Integer voto;
