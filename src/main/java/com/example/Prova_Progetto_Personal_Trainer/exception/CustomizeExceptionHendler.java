@@ -4,6 +4,7 @@ package com.example.Prova_Progetto_Personal_Trainer.exception;
 
 
 
+import com.example.Prova_Progetto_Personal_Trainer.model.ApiError;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
