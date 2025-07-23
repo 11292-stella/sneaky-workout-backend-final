@@ -36,6 +36,9 @@ public class SecurityConfig {
         httpSecurity.formLogin(http -> http.disable());
         httpSecurity.csrf(http -> http.disable());
         httpSecurity.sessionManagement(http -> http.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+
+        // Applica la configurazione CORS definita nel bean corsConfigurationSource()
+        // Questo dovrebbe essere sufficiente, ma se non funziona, potremmo dover aggiungere CorsFilter esplicitamente.
         httpSecurity.cors(Customizer.withDefaults());
 
         JwtFilter jwtFilter = applicationContext.getBean(JwtFilter.class);
@@ -63,13 +66,13 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration corsConfiguration = new CorsConfiguration();
-        // Ho ripristinato Arrays.asList per coerenza con le best practice
-        corsConfiguration.setAllowedOrigins(Arrays.asList("https://front-project-personal-trainer.vercel.app"));
-        corsConfiguration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        corsConfiguration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Auth-Token"));
-        corsConfiguration.setExposedHeaders(Arrays.asList("Authorization", "X-Auth-Token"));
+        // *** MODIFICA QUI PER CONSENTIRE TUTTO (SOLO PER DEBUG) ***
+        corsConfiguration.setAllowedOrigins(List.of("*")); // Consentire tutte le origini
+        corsConfiguration.setAllowedMethods(List.of("*")); // Consentire tutti i metodi (GET, POST, PUT, DELETE, OPTIONS)
+        corsConfiguration.setAllowedHeaders(List.of("*")); // Consentire tutti gli header
+        corsConfiguration.setExposedHeaders(List.of("Authorization", "X-Auth-Token")); // Mantenere questi per il frontend
         corsConfiguration.setAllowCredentials(true);
-        corsConfiguration.setMaxAge(3600L);
+        corsConfiguration.setMaxAge(3600L); // Cache per 1 ora
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", corsConfiguration);
